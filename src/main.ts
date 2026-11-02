@@ -4,7 +4,8 @@ import './style.css';
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('App root not found');
 
-const ASSET_BASE = import.meta.env.BASE_URL;
+// GitHub Pages asset path
+const ASSET_BASE = '/Aetheria-Astra-demo/';
 
 app.innerHTML = `
 <main class="battle-screen">
@@ -68,10 +69,12 @@ app.innerHTML = `
         <strong>⚔</strong>
         <span>Normal Attack<small>3 hits · +9 Energy</small></span>
       </button>
+
       <button id="skillBtn">
         <strong>🌪</strong>
         <span>Gale Piercer<small>2 hits · +15 Energy</small></span>
       </button>
+
       <button id="ultBtn" disabled>
         <strong>✦</strong>
         <span>Tempest Awakening<small>50 Energy</small></span>
@@ -86,7 +89,6 @@ const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 
 const hero = $('heroSprite') as HTMLImageElement;
-const enemy = $('enemySprite') as HTMLImageElement;
 
 let heroHp = 100;
 let enemyHp = 90;
@@ -102,15 +104,19 @@ const frames: Record<string, string[]> = {
   idle: Array.from({ length: 7 }, (_, i) =>
     `${ASSET_BASE}assets/ayan/idle/idle_${String(i + 1).padStart(2, '0')}.png`
   ),
+
   attack: Array.from({ length: 5 }, (_, i) =>
     `${ASSET_BASE}assets/ayan/attack_1/attack_1_${String(i + 1).padStart(2, '0')}.png`
   ),
+
   skill: Array.from({ length: 6 }, (_, i) =>
     `${ASSET_BASE}assets/ayan/skill_gale_piercer/skill_gale_piercer_${String(i + 1).padStart(2, '0')}.png`
   ),
+
   hurt: Array.from({ length: 7 }, (_, i) =>
     `${ASSET_BASE}assets/ayan/damage_hurt/damage_hurt_${String(i + 1).padStart(2, '0')}.png`
   ),
+
   die: Array.from({ length: 7 }, (_, i) =>
     `${ASSET_BASE}assets/ayan/die/die_${String(i + 1).padStart(2, '0')}.png`
   )
@@ -118,8 +124,7 @@ const frames: Record<string, string[]> = {
 
 function playFrames(
   list: string[],
-  delay = 95,
-  loop = false
+  delay = 95
 ): Promise<void> {
   return new Promise(resolve => {
     let i = 0;
@@ -129,9 +134,6 @@ function playFrames(
       i++;
 
       if (i < list.length) {
-        setTimeout(step, delay);
-      } else if (loop) {
-        i = 0;
         setTimeout(step, delay);
       } else {
         setTimeout(() => {
@@ -153,8 +155,8 @@ function update() {
   $('enemyHpText').textContent = `${enemyHp} / 90`;
   $('enemyHpBar').style.width = `${enemyHp / 90 * 100}%`;
 
-  $('energyText').textContent = `${energy} / ${maxEnergy}`;
-  $('energyBar').style.width = `${energy / maxEnergy * 100}%`;
+  $('energyText').textContent = `${energy} / 50`;
+  $('energyBar').style.width = `${energy / 50 * 100}%`;
 
   $('ultBtn').toggleAttribute(
     'disabled',
@@ -198,7 +200,7 @@ async function enemyTurn() {
 
   $('enemyWrap').classList.remove('enemy-attack');
 
-  const damage = Math.max(1, 8 - 2);
+  const damage = 6;
   heroHp = Math.max(0, heroHp - damage);
 
   popup(`-${damage} HP`, 'hero');
@@ -239,9 +241,9 @@ async function action(type: string) {
 
     await playFrames(frames.attack, 90);
 
-    for (let i = 0; i < 3; i++) {
-      const scale = [0.52, 0.48, 0.68][i];
+    const hits = [0.52, 0.48, 0.68];
 
+    for (const scale of hits) {
       const hit = Math.floor(
         20 * scale * (buffRounds > 0 ? 1.3 : 1)
       );
@@ -330,8 +332,10 @@ $('backBtn').addEventListener('click', () => {
 const restart = document.createElement('button');
 restart.textContent = '↻ Restart Battle';
 restart.className = 'restart';
+
 restart.onclick = () => location.reload();
 
 document.querySelector('.bottom-panel')?.append(restart);
 
 update();
+        
